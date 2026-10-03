@@ -232,3 +232,38 @@ body.portrait:not(.in-game) #controls { display: none; }
   .menu-buttons { grid-template-columns: 1fr 1fr; gap: 10px; }
   .btn { font-size: 15px; padding: 8px 10px; }
 }
+
+/* ---------- 戰鬥 ---------- */
+body.in-arena .hud-cat, body.in-arena .hud-bars, body.in-arena .hud-side { display: none; }
+body.in-arena #hud { justify-content: flex-end; padding-top: calc(var(--canvas-h) * 0.13); }
+body.portrait.in-arena #hud { padding-top: 8px; }
+.act.cooling { filter: grayscale(.6); opacity: .75; }
+#btnInteract { font-size: 15px; }
+.prep-section { margin: 12px 0; }
+.prep-section h3 { margin: 0 0 6px; font-size: 15px; }
+.choice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.choice { border: 3px solid var(--line); background: var(--wall); padding: 8px; text-align: left; font-size: 14px; line-height: 1.4; }
+.choice strong { display: block; font-size: 15px; }
+.choice.selected { background: var(--sky); box-shadow: inset -3px -3px 0 #5FAFE0; }
+.choice:disabled { opacity: .45; cursor: not-allowed; }
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+.result-grid div { border: 3px solid var(--line); background: var(--wall); padding: 8px; text-align: center; }
+.result-grid b { display: block; font-size: 26px; }
+.result-title { text-align: center; font-size: 28px; font-weight: 900; margin: 0 0 6px; }
+.warn { color: #B8432F; font-weight: 700; }
+
+/* 手機直向戰鬥：計時與血條移到畫布下方的 DOM（畫布太小，畫在 Canvas 上看不清楚） */
+.battle-hud { display: none; }
+body.portrait.in-arena .battle-hud {
+  display: flex; flex: 1 1 100%; gap: 10px; align-items: center; background: var(--paper);
+  border: 3px solid var(--line); box-shadow: 3px 3px 0 var(--wood); padding: 8px 10px;
+}
+body.portrait.in-arena #hud { flex-wrap: nowrap; align-items: stretch; }
+.bh-time { display: flex; flex-direction: column; align-items: center; min-width: 4.6em; }
+.bh-time b { font: 900 30px ui-monospace, Menlo, monospace; line-height: 1; }
+.bh-time b.urgent { color: #B8432F; }
+.bh-time small { font-size: 12px; margin-top: 4px; white-space: nowrap; }
+.bh-bars { flex: 1; display: grid; gap: 6px; }
+.bh-bars .bar { grid-template-columns: 3.4em 1fr 4.6em; }
+#bhBox .bar-track i { background: var(--wood); }
+.bar.low .bar-track i { background: var(--warn) !important; }
