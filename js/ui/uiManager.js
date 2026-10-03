@@ -17,7 +17,7 @@ function el(tag, props = {}, children = []) {
 }
 export { el };
 
-const SCREENS = ['loading', 'login', 'menu', 'adopt'];
+const SCREENS = ['loading', 'login', 'menu', 'adopt', 'admin'];
 
 export function fmtClock(sec) {
   const s = Math.max(0, Math.ceil(sec));
