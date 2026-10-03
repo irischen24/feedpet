@@ -30,6 +30,11 @@ export class SupabaseClient {
     this.anonKey = anonKey;
     this.tokenProvider = null;     // async () => access_token | null（由 AuthManager 設定）
     this.onUnauthorized = null;    // async () => boolean（嘗試 refresh，成功回 true）
+    this.lastError = null;         // DEBUG 顯示用：{ path, code, at }
+  }
+
+  _noteError(path, code) {
+    this.lastError = { path: path.split('?')[0], code, at: new Date().toLocaleTimeString('zh-TW', { hour12: false }) };
   }
 
   async _fetch(path, { method = 'GET', body, headers = {}, useAuth = true, keepalive = false, _retried = false } = {}) {
@@ -46,6 +51,7 @@ export class SupabaseClient {
         signal: ctrl.signal, keepalive, credentials: 'omit', cache: 'no-store',
       });
     } catch (_e) {
+      this._noteError(path, 'NETWORK');
       throw new NetworkError();
     } finally {
       clearTimeout(timer);
@@ -62,6 +68,7 @@ export class SupabaseClient {
     }
     if (!res.ok) {
       const { code, message } = extractCode(typeof data === 'object' ? data : { message: String(data || '') });
+      this._noteError(path, code || res.status);
       throw new ApiError(res.status, code, message);
     }
     return data;
