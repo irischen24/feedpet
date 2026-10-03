@@ -1,1 +1,46 @@
+// 後端錯誤碼 → 玩家看得懂的訊息
+const MESSAGES = {
+  NETWORK: '目前無法連接遊戲伺服器。請確認網路連線後重試。',
+  AUTH_REQUIRED: '請先登入。',
+  SESSION_EXPIRED: '登入已過期，請重新登入。',
+  INVALID_LOGIN: '帳號或密碼錯誤。',
+  USERNAME_TAKEN: '這個帳號已經有人使用。',
+  INVALID_USERNAME: '帳號只能使用 3–20 個小寫英文、數字或底線。',
+  WEAK_PASSWORD: '密碼至少需要 8 個字元。',
+  EMAIL_CONFIRM_ON: '伺服器尚未關閉 Email 驗證，請管理員到 Supabase 設定關閉 Confirm email。',
+  FORBIDDEN: '你沒有權限執行這個操作。',
+  NOT_ENOUGH_FISH: '魚乾不夠。',
+  ITEM_NOT_ENOUGH: '背包裡的數量不夠。',
+  ITEM_NOT_FOR_SALE: '這個商品目前不能購買。',
+  INVALID_QTY: '數量不正確。',
+  ANIMAL_NOT_AVAILABLE: '這隻貓咪目前不開放認養。',
+  ANIMAL_FULL: '這隻貓咪的認養名額已滿。',
+  ALREADY_ADOPTED: '你已經認養了這隻貓咪。',
+  ADOPTION_LIMIT: '你認養的貓咪已達上限。',
+  NO_PREVIOUS_ADOPTION: '你之前沒有認養過這隻貓咪，無法保留成長。',
+  ADOPTION_NOT_FOUND: '找不到這段認養關係，可能已經到期。',
+  INVALID_FOOD: '這不是食物。',
+  INVALID_TASK: '這個照護任務不適用。',
+  PET_SICK: '貓咪生病了，需要先用藥照護。',
+  PET_NOT_SICK: '貓咪目前很健康。',
+  WRONG_MEDICINE: '這個藥物不適合目前的疾病。',
+  REST_COOLDOWN: '貓咪剛休息過，晚點再來。',
+  NO_STAMINA: '體力不足，先休息或餵食吧。',
+  SKILL_LOCKED: '這個技能還沒解鎖。',
+  SESSION_NOT_FOUND: '找不到這場戰鬥。',
+  INVALID_ROOM: '戰場不存在。',
+  INVALID_LAYOUT: '房間配置格式不正確。',
+  INVALID_LAYOUT_ITEM: '房間配置含有不能擺放的物品。',
+  INVALID_LAYOUT_POSITION: '家具位置超出房間範圍。',
+  INVALID_THEME: '你還沒有這個地板或壁紙。',
+  INVALID_AMOUNT: '數量不正確。',
+  TASK_NOT_FOUND: '這個助養任務已結束。',
+  REASON_REQUIRED: '請填寫原因（1–200 字）。',
+  LAST_ADMIN: '不能移除最後一位管理員。',
+  USER_NOT_FOUND: '找不到這位玩家。',
+};
 
+export function messageFor(err) {
+  const code = err && err.code;
+  return MESSAGES[code] || (err && err.status >= 500 ? MESSAGES.NETWORK : '發生錯誤，請稍後再試。');
+}
