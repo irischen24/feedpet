@@ -132,6 +132,26 @@
     </div>
   </section>
 
+  <!-- ADMIN PANEL（入口只對 role=admin 顯示；權限由後端驗證） -->
+  <section id="screen-admin" class="screen admin-screen">
+    <div class="admin">
+      <header class="admin-head">
+        <h2>ADMIN PANEL</h2>
+        <span id="adminWho"></span>
+        <button class="btn small" id="adminBack">返回遊戲</button>
+      </header>
+      <nav class="tabs admin-tabs" id="adminTabs"></nav>
+      <div id="adminBody" class="admin-body"></div>
+    </div>
+    <aside id="adminDrawer" class="admin-drawer hidden" aria-labelledby="adminDrawerTitle">
+      <div class="panel-head">
+        <h2 id="adminDrawerTitle"></h2>
+        <button class="btn small" id="adminDrawerClose">關閉</button>
+      </div>
+      <div id="adminDrawerBody"></div>
+    </aside>
+  </section>
+
   <!-- 共用對話框 -->
   <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="panel modal-panel">
