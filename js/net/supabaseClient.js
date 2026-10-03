@@ -107,6 +107,26 @@ export class SupabaseClient {
     return this._fetch(`/rest/v1/${table}?${p.toString()}`);
   }
 
+  insert(table, row) {
+    if (!/^[a-z_][a-z0-9_]*$/.test(table)) throw new Error('Invalid table name');
+    return this._fetch(`/rest/v1/${table}`, { method: 'POST', body: row, headers: { Prefer: 'return=representation' } });
+  }
+
+  // 取得總筆數（PostgREST count=exact，透過 Content-Range）
+  async count(table, filters = {}) {
+    const p = new URLSearchParams({ select: '*', limit: '1' });
+    for (const [k, v] of Object.entries(filters)) p.set(k, v);
+    const token = this.tokenProvider ? await this.tokenProvider() : null;
+    try {
+      const res = await fetch(`${this.url}/rest/v1/${table}?${p}`, {
+        method: 'HEAD', headers: { apikey: this.anonKey, Authorization: `Bearer ${token || this.anonKey}`, Prefer: 'count=exact' },
+        credentials: 'omit', cache: 'no-store',
+      });
+      const m = /\/(\d+)$/.exec(res.headers.get('content-range') || '');
+      return m ? Number(m[1]) : null;
+    } catch { return null; }
+  }
+
   update(table, filters, patch) {
     if (!/^[a-z_][a-z0-9_]*$/.test(table)) throw new Error('Invalid table name');
     const p = new URLSearchParams(filters);
