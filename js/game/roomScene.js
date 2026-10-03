@@ -13,6 +13,7 @@ export class RoomScene {
     this.cat = new Cat(assets, adoption, this.room.spawn(spawn));
     this.nearDoor = null;
     this.ambientTimer = 2;
+    this.decor = null;                // 裝飾模式時為 DecorateController
   }
 
   enter() { this.hooks.onEnter?.(this.room); }
@@ -22,6 +23,7 @@ export class RoomScene {
   setAdoption(adoption) { this.cat.setAdoption(adoption); this.ambientTimer = 0.5; }
 
   update(dt) {
+    if (this.decor) { this.cat.update(dt, this.input, this.room, { canMove: false }); return; }
     this.cat.update(dt, this.input, this.room);
 
     const door = this.room.doorAt(this.cat.x, this.cat.y);
@@ -37,7 +39,10 @@ export class RoomScene {
     }
   }
 
-  render(ctx) { this.room.render(ctx, [this.cat]); }
+  render(ctx) {
+    this.room.render(ctx, [this.cat]);
+    if (this.decor) this.decor.renderOverlay(ctx);
+  }
 
   renderDebug(ctx) {
     this.room.renderDebug(ctx);

@@ -13,6 +13,8 @@ export class DataStore {
     this.config = {};
     this.characterTypes = {};
     this.monsters = {};
+    this.items = {};
+    this.careTasks = {};
     this.serverOffsetMs = 0;
     this.listeners = new Set();
   }
@@ -21,11 +23,15 @@ export class DataStore {
   _emit() { for (const fn of this.listeners) fn(this); }
 
   async loadCatalog() {
-    const [cfg, types, monsters] = await Promise.all([
+    const [cfg, types, monsters, items, tasks] = await Promise.all([
       supabase.select('game_config', { select: 'key,value' }),
       supabase.select('character_types', { select: '*', order: 'sort.asc' }),
       supabase.select('monsters', { select: '*' }),
+      supabase.select('items', { select: '*', order: 'sort.asc' }),
+      supabase.select('care_tasks', { select: '*', order: 'sort.asc' }),
     ]);
+    this.items = Object.fromEntries(items.map((i) => [i.code, i]));
+    this.careTasks = Object.fromEntries(tasks.map((t) => [t.code, t]));
     this.monsters = Object.fromEntries(monsters.map((m) => [m.code, m]));
     this.config = Object.fromEntries(cfg.map((r) => [r.key, r.value]));
     this.characterTypes = Object.fromEntries(types.map((t) => [t.code, t]));

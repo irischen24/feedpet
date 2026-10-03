@@ -48,6 +48,7 @@ export class Room {
       const img = assets.get(p.img);
       return { ...p, image: img, w: img.width * PX, h: img.height * PX };
     });
+    this.extraSolids = [];
     this.collision = new CollisionManager({
       walkable: def.walkable,
       solids: this.props.filter((p) => p.solid).map((p) => p.solid),
@@ -61,16 +62,31 @@ export class Room {
   render(ctx, entities) {
     ctx.drawImage(this.bg, 0, 0, this.bg.width * PX, this.bg.height * PX);
     // 依腳底 y 排序（越下面越靠前）
-    const drawables = [...this.props.map((p) => ({ y: p.y, draw: () => this._drawProp(ctx, p) })),
+    const drawables = [...this.props.map((p) => ({ y: p.flat ? -1 : p.y, draw: () => this._drawProp(ctx, p) })),
                        ...entities.map((e) => ({ y: e.y, draw: () => e.render(ctx) }))];
     drawables.sort((a, b) => a.y - b.y);
     for (const d of drawables) d.draw();
   }
 
+  // 家具等動態物件：重設 props 與碰撞
+  setDynamicProps(props) {
+    this.props = [...this.def.props.map((p) => this.props.find((q) => q.id === p.id)).filter(Boolean), ...props];
+    this.collision.solids = this.props.filter((p) => p.solid).map((p) => p.solid);
+  }
+
   _drawProp(ctx, p) {
+    if (p.flat) {                                   // 地毯：貼地，畫在所有東西下面
+      ctx.drawImage(p.image, 0, 0, p.srcW || p.image.width, p.image.height, Math.round(p.x - p.w / 2), Math.round(p.y - p.h), p.w, p.h);
+      return;
+    }
     ctx.fillStyle = 'rgba(107, 62, 38, 0.22)';
-    ctx.beginPath(); ctx.ellipse(p.x, p.y - 2, p.w * 0.46, 10, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.drawImage(p.image, Math.round(p.x - p.w / 2), Math.round(p.y - p.h), p.w, p.h);
+    ctx.beginPath(); ctx.ellipse(p.x, p.y - 2, p.w * 0.46, Math.min(10, p.h * 0.2), 0, 0, Math.PI * 2); ctx.fill();
+    const sw = p.srcW || p.image.width, sx = (p.frame || 0) * sw;
+    ctx.save();
+    ctx.translate(Math.round(p.x), Math.round(p.y));
+    if (p.flipped) ctx.scale(-1, 1);
+    ctx.drawImage(p.image, sx, 0, sw, p.image.height, -Math.round(p.w / 2), -p.h, p.w, p.h);
+    ctx.restore();
   }
 
   renderDebug(ctx) {

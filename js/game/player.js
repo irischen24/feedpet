@@ -55,6 +55,7 @@ export class Cat {
     this.state = 'HURT'; this.actionT = 0.25; this.flashT = 0.6; this.anim.play('hurt', true);
   }
   faint() { this.state = 'FAINT'; this.actionT = 0; this.anim.play('faint', true); this.bubble = null; }
+  playEat(sec = 2.4) { if (this.state === 'FAINT') return; this.state = 'EAT'; this.actionT = sec; this.anim.play('eat', true); }
 
   update(dt, input, room, { canMove = true, speedMul = 1 } = {}) {
     this.t += dt;
@@ -69,7 +70,8 @@ export class Cat {
       const d = Math.hypot(dx, dy);
       if (d < 8) input.tapTarget = null; else v = { x: dx / d, y: dy / d };
     }
-    const busy = this.state === 'ATTACK' || this.state === 'HURT';
+    if (this.state === 'EAT' && (v.x || v.y)) { this.state = 'IDLE'; this.actionT = 0; }   // 走開就停止吃飯
+    const busy = this.state === 'ATTACK' || this.state === 'HURT' || this.state === 'EAT';
     if (v.x || v.y) {
       const bx = this.x, by = this.y, sp = CAT_SPEED * speedMul;
       const { hitX, hitY } = room.collision.move(this, v.x * sp * dt, v.y * sp * dt);
@@ -112,6 +114,9 @@ export class Cat {
     ctx.translate(x + ox, y + oy);
     if (this.facing === 1) ctx.scale(-1, 1);
     const left = -Math.round(this.w / 2);
+    if (this.state === 'EAT') {                                            // 吃飯：低頭（壓 1 格）+ 粉紅碗
+      oy = Math.floor(this.t * 3) % 2 ? PX : 0;
+    }
     if (this.state === 'FAINT') {                                          // 趴下：壓成 60% 高
       const fh = Math.round(ih * 0.6) * PX;
       ctx.drawImage(this.img, left - PX * 2, -fh, this.w + PX * 4, fh);
@@ -123,6 +128,12 @@ export class Cat {
       ctx.drawImage(this.img, left, -this.h, this.w, this.h);
     }
     ctx.restore();
+    if (this.state === 'EAT') {                                            // 碗畫在貓的前方（面向那側）
+      const bx = x + this.facing * this.w * 0.3, by = y + 6;
+      ctx.fillStyle = '#6B3E26'; ctx.fillRect(bx - 21, by - 18, 42, 18);
+      ctx.fillStyle = '#F6B0B0'; ctx.fillRect(bx - 18, by - 15, 36, 12);
+      ctx.fillStyle = '#8B5A2B'; for (let i = 0; i < 4; i++) ctx.fillRect(bx - 15 + i * 9, by - 21, 6, 6);
+    }
   }
 
   _zzz(ctx, x, y) {
