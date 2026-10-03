@@ -17,6 +17,8 @@ import { drawYard, drawStorage, drawDoor, drawFoodBox, drawFoodBoxSheet, drawCra
 import { optionalManifest, SpriteSheet, CAT_ANIMS, CAT_CELL, MONSTER_ANIMS, MONSTER_CELL } from './engine/sprites.js';
 import { buildMonsterSheets } from './game/monsterArt.js';
 import { BattleScene } from './game/battleScene.js';
+import { furnitureManifest, buildFurnitureAssets, composeHomeBg, furnitureProps, DecorateController, FURNITURE_CODES, DECOR_CODES, iconUrl } from './game/homeFurniture.js';
+import { Panels } from './ui/panels.js';
 import { ROOM_DEFS } from './game/room.js';
 import { RoomScene } from './game/roomScene.js';
 import { DataStore } from './game/dataStore.js';
@@ -43,6 +45,8 @@ class App {
     this.game = new Game({ scaler: this.scaler, input: this.input, debug: DEBUG_ALLOWED });
     this.scene = null;
     this.catalogLoaded = false;
+    this.panels = new Panels(this);
+    this.modalKind = null;
     this._refreshAcc = 0;
     this._hudAcc = 0;
 
@@ -65,7 +69,7 @@ class App {
   async boot() {
     this.state = 'LOADING';
     this.ui.show('loading');
-    const opt = optionalManifest();
+    const opt = { ...optionalManifest(), ...furnitureManifest() };
     const total = Object.keys(MANIFEST).length + Object.keys(opt).length;
     try {
       await this.assets.loadAll(MANIFEST, (d) => this.ui.setLoading(d, total));
@@ -76,6 +80,7 @@ class App {
       return;
     }
     this._validateCustomAssets();
+    buildFurnitureAssets(this.assets, (w) => this.assetWarnings.push(w));
     this._buildGeneratedArt();
     this.game.start();                     // 圖片全部載入後才啟動 Game Loop
     await this.resumeSession();
@@ -102,12 +107,17 @@ class App {
   }
 
   _buildGeneratedArt() {
-    const home = document.createElement('canvas');
-    home.width = ART_W; home.height = ART_H;
-    const g = home.getContext('2d'); g.imageSmoothingEnabled = false;
-    g.drawImage(this.assets.get('room_home'), 0, 0);
-    g.drawImage(drawDoor(70), 316, 73);    // 門：後牆右側，底部貼齊地板線
-    this.assets.set('bg_home', home);
+    this.assets.set('bg_home', composeHomeBg(this.assets, {}));
+    // 虎斑餵食 3 格原圖 → 依規格補成 64×56 的 eat Sprite Sheet（你上傳 cat_tabby_eat.png 時以上傳為準）
+    if (!this.assets.has('cat_tabby_eat')) {
+      const sheet = document.createElement('canvas'); sheet.width = CAT_CELL.w * 3; sheet.height = CAT_CELL.h;
+      const sg = sheet.getContext('2d'); sg.imageSmoothingEnabled = false;
+      for (let i = 0; i < 3; i++) {
+        const f = this.assets.get(`cat_tabby_feed${i + 1}`);
+        sg.drawImage(f, i * CAT_CELL.w + Math.round((CAT_CELL.w - f.width) / 2), CAT_CELL.h - f.height);
+      }
+      this.assets.set('cat_tabby_eat', sheet);
+    }
     const pick = (fileKey, fallback) => (this.assets.has(fileKey) ? this.assets.get(fileKey) : fallback());
     this.assets.set('bg_yard', pick('file_arena_yard', drawYard));
     this.assets.set('bg_storage', pick('file_arena_storage', drawStorage));
@@ -134,6 +144,8 @@ class App {
 
   // ---------------- 狀態切換 ----------------
   _stopScene() {
+    if (this.scene?.decor) this.endDecorate();
+    $('homeActions').classList.add('hidden');
     if (this.scene) { this.game.setScene(null); this.scene = null; }
     this.ui.setInGame(false);
     this.game.paused = false;
@@ -213,6 +225,8 @@ class App {
     this.ui.setInGame(true, def.type === 'arena');
     this.ui.updateHud(this.store);
     this.state = def.type === 'arena' ? 'ARENA' : 'HOME';
+    $('homeActions').classList.toggle('hidden', this.state !== 'HOME');
+    if (this.state === 'HOME') { this.applyHome(); this.renderToday(); }
     this.audio.sfx('door');
     this.audio.playBgm();
     if (def.type === 'arena') this.ui.toast(`${def.name}（練習）：先熟悉場地。怪物與 60 秒守護戰在 Phase 8 加入。`, 4500);
@@ -299,9 +313,11 @@ class App {
         domHud: () => document.body.classList.contains('portrait'),
       },
     });
+    if (this.scene?.decor) this.endDecorate();
     this.game.setScene(this.scene);
     this.ui.hideScreens();
     this.ui.setInGame(true, true);
+    $('homeActions').classList.add('hidden');
     this.state = 'BATTLE';
     this.audio.sfx('door');
   }
@@ -375,20 +391,121 @@ class App {
   }
 
   // ---------------- 對話框（開啟時暫停遊戲與輸入） ----------------
-  openModal(title, nodes, onClose) {
-    this.game.paused = !!this.scene;
+  openModal(title, nodes, onClose, kind = null) {
+    this.game.paused = !!this.scene && this.state === 'BATTLE';   // 家中開面板時貓咪照常動畫，戰鬥才暫停
     this.input.enabled = false;
     this.input.reset();
+    this.modalKind = kind;
     this.ui.openModal(title, nodes, () => {
       this.game.paused = false;
-      this.input.enabled = true;
+      this.input.enabled = !this.scene?.decor;
+      this.modalKind = null;
       if (onClose) onClose();
     });
+  }
+  setModalBody(nodes) { $('modalBody').replaceChildren(...[].concat(nodes).filter(Boolean)); }
+  rpc(name, args) { return supabase.rpc(name, args); }
+
+  // ================= Phase 9：家中狀態同步、照護、裝飾 =================
+  homeFurniture() {
+    const a = this.store.selected;
+    const dirty = !!a && !a.tasks_today.includes('litter');
+    return furnitureProps(this.store.state?.furniture || [], this.assets, { litterDirty: dirty });
+  }
+
+  applyHome() {
+    if (!this.scene || this.state !== 'HOME' || this.scene.decor) return;
+    this.scene.room.bg = composeHomeBg(this.assets, this.store.state?.progress?.room_theme || {});
+    this.scene.room.setDynamicProps(this.homeFurniture());
+  }
+
+  afterStateChange() {
+    const a = this.store.selected;
+    if (a && this.scene && this.state === 'HOME') this.scene.setAdoption(a);
+    this.applyHome();
+    this.ui.updateHud(this.store);
+    this.renderToday();
+  }
+
+  onFed() {
+    if (this.scene && this.state === 'HOME') { this.scene.cat.playEat(2.4); this.scene.cat.say('好吃！謝謝你～', 3); }
+  }
+
+  renderToday() {
+    const a = this.store.selected;
+    const box = $('todayTasks');
+    if (!a) { box.textContent = ''; return; }
+    const names = { feed: '餵食', litter: '鏟砂', brush: '刷牙', wand: '逗貓棒', nail: '指甲' };
+    const done = Object.keys(names).filter((k) => a.tasks_today.includes(k)).length;
+    box.replaceChildren(document.createTextNode(`今日照護 ${done}/5：`),
+      ...Object.entries(names).map(([k, v]) => el('span', { class: a.tasks_today.includes(k) ? 'ok' : '', text: `${a.tasks_today.includes(k) ? '✓' : '○'}${v} ` })));
+    $('btnCare').textContent = done < 5 ? `照護（${5 - done}）` : '照護 ✓';
+  }
+
+  startDecorate() {
+    if (!this.scene || this.state !== 'HOME') return;
+    this.ui.closeModal();
+    this.input.enabled = false; this.input.reset();
+    this.decorTheme = { ...(this.store.state.progress?.room_theme || {}) };
+    this.scene.decor = new DecorateController({
+      canvas: $('game'), scaler: this.scaler, scene: this.scene, assets: this.assets,
+      layout: this.store.state.furniture || [], onChange: () => this.renderDecorBar(),
+    });
+    this.renderDecorBar();                         // 建構時 scene.decor 還沒指定，這裡補畫一次
+    $('homeActions').classList.add('hidden');
+    $('controls').classList.add('hidden');
+    $('decorBar').classList.remove('hidden');
+    this.ui.setPrompt(null);
+    this.logs.log('UI_OPEN', { targetType: 'panel', targetId: 'decorate' });
+  }
+
+  renderDecorBar() {
+    const d = this.scene?.decor; if (!d) return;
+    const owned = (code) => (this.store.state.inventory || []).find((i) => i.item_code === code)?.qty || 0;
+    const items = FURNITURE_CODES.filter((c) => owned(c) > 0);
+    $('decorItems').replaceChildren(...(items.length ? items.map((c) => {
+      const left = owned(c) - d.placedCount(c);
+      return el('button', { class: 'decor-item', ...(left > 0 ? {} : { disabled: 'disabled' }), onclick: () => d.add(c) },
+        [el('img', { src: iconUrl(c), alt: '' }), document.createTextNode(`${this.store.items[c]?.name || c} ×${left}`)]);
+    }) : [el('span', { class: 'hint', text: '還沒有家具，可以到商店購買。' })]));
+    $('decorFlip').disabled = d.selected < 0; $('decorRemove').disabled = d.selected < 0;
+    const themeRow = (slot, label, defName) => {
+      const opts = [[null, defName], ...DECOR_CODES.filter((c) => this.store.items[c]?.effect?.slot === slot && owned(c) > 0).map((c) => [c, this.store.items[c].name])];
+      if (opts.length < 2) return null;
+      return el('span', { class: 'theme-pick' }, [document.createTextNode(label), ...opts.map(([code, name]) =>
+        el('button', { class: `btn small${(this.decorTheme[slot] || null) === code ? ' selected' : ''}`, text: name, onclick: () => {
+          if (code) this.decorTheme[slot] = code; else delete this.decorTheme[slot];
+          this.scene.room.bg = composeHomeBg(this.assets, this.decorTheme); this.renderDecorBar();
+        } }))]);
+    };
+    $('decorThemes').replaceChildren(...[themeRow('floor', '地板', '原木'), themeRow('wallpaper', '壁紙', '原色')].filter(Boolean));
+  }
+
+  endDecorate() {
+    if (!this.scene?.decor) return;
+    this.scene.decor.destroy(); this.scene.decor = null;
+    $('decorBar').classList.add('hidden');
+    $('homeActions').classList.remove('hidden');
+    $('controls').classList.remove('hidden');
+    this.input.enabled = true;
+    this.applyHome();
+  }
+
+  async saveDecorate() {
+    const d = this.scene?.decor; if (!d) return;
+    $('decorSave').disabled = true;
+    try {
+      await supabase.rpc('save_room_layout', { p_items: d.layout.map(({ item_code, x, y, flipped }) => ({ item_code, x, y, flipped: !!flipped })), p_theme: this.decorTheme });
+      await this.store.refresh();
+      this.endDecorate();
+      this.ui.toast('房間佈置已儲存');
+    } catch (e) { this.fail(e, () => this.saveDecorate()); }
+    finally { $('decorSave').disabled = false; }
   }
   closeModalSilently() { this.ui.closeModal(); }
 
   openPause() {
-    if (!this.scene || this.ui.modalOpen) return;
+    if (!this.scene || this.ui.modalOpen || this.scene.decor) return;
     this.logs.log('BATTLE_PAUSE', { targetType: 'room', targetId: this.scene.room.id });
     if (this.state === 'BATTLE') {
       this.openModal('暫停', [
@@ -512,6 +629,18 @@ class App {
     $('btnHow').addEventListener('click', () => this.openHowTo());
     $('btnRanking').addEventListener('click', () => this.openRanking());
     $('btnSettings').addEventListener('click', () => this.openSettings());
+    $('btnCharity').addEventListener('click', () => this.panels.openCharity());
+    $('homeActions').addEventListener('click', (e) => {
+      const act = e.target.closest('[data-act]')?.dataset.act;
+      if (act === 'care') this.panels.openCare();
+      else if (act === 'shop') this.panels.openShop();
+      else if (act === 'decorate') this.startDecorate();
+      else if (act === 'charity') this.panels.openCharity();
+    });
+    $('decorFlip').addEventListener('click', () => this.scene?.decor?.flip());
+    $('decorRemove').addEventListener('click', () => this.scene?.decor?.remove());
+    $('decorCancel').addEventListener('click', () => this.endDecorate());
+    $('decorSave').addEventListener('click', () => this.saveDecorate());
     $('btnAdmin').addEventListener('click', () => this.openModal('管理後台', [
       el('p', { text: '管理後台將在 Phase 10 完成。目前可以用 tools/phase5-test.html 的管理員功能。' }),
     ]));
@@ -531,7 +660,7 @@ class App {
     $('hudMenu').addEventListener('click', () => this.openPause());
     $('hudCat').addEventListener('click', () => {
       const a = this.store.cycleSelected();
-      if (a && this.scene) { this.scene.setAdoption(a); this.ui.updateHud(this.store); }
+      if (a && this.scene) { this.scene.setAdoption(a); this.ui.updateHud(this.store); this.applyHome(); this.renderToday(); }
     });
   }
 
@@ -561,7 +690,7 @@ class App {
       this.store.refresh().then(() => {
         const a = this.store.selected;
         if (!a) { this.openAdopt(); return; }
-        this.scene?.setAdoption(a);
+        this.afterStateChange();
         this._notifyEnded();
       }).catch((e) => { if (!(e instanceof NetworkError)) this.fail(e); });
     }
