@@ -21,7 +21,7 @@ export const ROOM_DEFS = {
     props: [{ id: 'food_box', img: 'food_box', x: 640, y: 470, solid: { x: 598, y: 446, w: 84, h: 26 } }],
     doors: [{ id: 'go_home', zone: { x: 560, y: 206, w: 160, h: 50 }, action: 'home', prompt: '回家' }],
     spawns: { default: { x: 640, y: 640 } },
-    monsterSpawns: [[40, 230], [640, 210], [1240, 230], [40, 700], [640, 712], [1240, 700]],
+    monsterSpawns: [[60, 250], [420, 236], [860, 236], [1220, 250], [60, 700], [640, 706], [1220, 700]],
   },
   arena_storage: {
     id: 'arena_storage', type: 'arena', name: '飼料倉庫', bg: 'bg_storage',
@@ -33,7 +33,7 @@ export const ROOM_DEFS = {
     ],
     doors: [{ id: 'go_home', zone: { x: 560, y: 238, w: 160, h: 50 }, action: 'home', prompt: '回家' }],
     spawns: { default: { x: 640, y: 650 } },
-    monsterSpawns: [[20, 260], [640, 240], [1260, 260], [20, 700], [640, 712], [1260, 700]],
+    monsterSpawns: [[40, 280], [420, 266], [860, 266], [1240, 280], [40, 700], [640, 706], [1240, 700]],
   },
 };
 

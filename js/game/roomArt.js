@@ -56,18 +56,31 @@ export function drawDoor(h = 70) {            // 42 × h
   return c;
 }
 
-export function drawFoodBox() {               // 32 × 26：飼料箱（戰鬥中要守護的目標）
+export function drawFoodBox(state = 0) {      // 32 × 26：飼料箱；state 0 完整 / 1 低於 50% / 2 低於 20%
   const [c, g] = canvas(32, 26);
   const kib = [[4,3],[7,1],[10,2],[13,0],[16,1],[19,2],[22,1],[25,3],[6,4],[12,3],[18,3],[24,4],[9,4],[15,4],[21,4]];
-  kib.forEach(([x, y], i) => { rect(g, x, y, 3, 3, P.line); rect(g, x + 1, y + 1, 2, 2, i % 2 ? P.kibbleLight : P.kibble); });
+  const keep = [kib.length, 8, 3][state];
+  kib.slice(0, keep).forEach(([x, y], i) => { rect(g, x, y + state, 3, 3, P.line); rect(g, x + 1, y + 1 + state, 2, 2, i % 2 ? P.kibbleLight : P.kibble); });
   outlineBox(g, 0, 6, 32, 20, P.wood);
   rect(g, 1, 7, 30, 2, P.woodLight);
   rect(g, 1, 13, 30, 1, P.woodDark); rect(g, 1, 19, 30, 1, P.woodDark);
   rect(g, 3, 7, 2, 18, P.woodDark); rect(g, 27, 7, 2, 18, P.woodDark);
-  // 魚圖示
   rect(g, 10, 11, 10, 6, P.line); rect(g, 11, 12, 8, 4, P.fish); rect(g, 12, 12, 2, 1, P.cream);
   rect(g, 20, 12, 1, 4, P.line); rect(g, 21, 11, 2, 2, P.line); rect(g, 21, 15, 2, 2, P.line);
   rect(g, 13, 13, 1, 1, P.lineDark);
+  if (state >= 1) {                             // 裂痕
+    for (const [x, y] of [[6,8],[7,9],[7,10],[8,11],[8,12],[9,13]]) rect(g, x, y, 1, 1, P.lineDark);
+  }
+  if (state >= 2) {
+    for (const [x, y] of [[24,9],[23,10],[24,11],[25,12],[24,13],[23,14],[23,15],[22,16]]) rect(g, x, y, 1, 1, P.lineDark);
+    rect(g, 1, 20, 9, 5, P.woodDark); rect(g, 0, 25, 11, 1, P.line);    // 掉落的木板
+  }
+  return c;
+}
+
+export function drawFoodBoxSheet() {           // 96 × 26，3 格
+  const [c, g] = canvas(96, 26);
+  for (let i = 0; i < 3; i++) g.drawImage(drawFoodBox(i), i * 32, 0);
   return c;
 }
 
