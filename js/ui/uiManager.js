@@ -80,12 +80,14 @@ export class UIManager {
     $('modalTitle').textContent = title;
     $('modalBody').replaceChildren(...[].concat(bodyNodes));
     $('modal').classList.remove('hidden');
+    document.body.classList.add('modal-open');
     this._modalOnClose = onClose || null;
     $('modalClose').focus();
   }
   closeModal() {
     if ($('modal').classList.contains('hidden')) return;
     $('modal').classList.add('hidden');
+    document.body.classList.remove('modal-open');
     const cb = this._modalOnClose; this._modalOnClose = null;
     if (cb) cb();
   }
