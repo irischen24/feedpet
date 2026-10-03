@@ -19,6 +19,11 @@ export { el };
 
 const SCREENS = ['loading', 'login', 'menu', 'adopt'];
 
+export function fmtClock(sec) {
+  const s = Math.max(0, Math.ceil(sec));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
 export class UIManager {
   constructor() {
     this._toastTimer = null;
@@ -39,6 +44,8 @@ export class UIManager {
   setInGame(on, isArena = false) {
     document.body.classList.toggle('in-game', on);
     document.body.classList.toggle('in-arena', on && isArena);
+    $('btnInteract').textContent = isArena ? '外出籠' : '互動';
+    $('btnSkill').textContent = '技能';
     $('hud').classList.toggle('hidden', !on);
     $('controls').classList.toggle('hidden', !on);
     if (!on) this.setPrompt(null);
@@ -153,6 +160,26 @@ export class UIManager {
     b.classList.toggle('low', low);
     b.querySelector('i').style.width = `${Math.max(0, Math.min(100, (v / max) * 100))}%`;
     b.querySelector('.bar-num').textContent = `${v}/${max}`;
+  }
+
+  // 戰鬥中手機按鈕顯示冷卻與剩餘次數
+  updateBattleButtons({ skillName, skillCd, carrierReady, carrierLeft, carrierCd }) {
+    const sk = $('btnSkill'), it = $('btnInteract');
+    const skText = !skillName ? '無技能' : skillCd > 0 ? `${Math.ceil(skillCd)}s` : '技能';
+    if (sk.textContent !== skText) sk.textContent = skText;
+    sk.classList.toggle('cooling', !skillName || skillCd > 0);
+    const itText = !carrierReady ? '未解鎖' : carrierCd > 0 ? `${Math.ceil(carrierCd)}s` : `外出籠×${carrierLeft}`;
+    if (it.textContent !== itText) it.textContent = itText;
+    it.classList.toggle('cooling', !carrierReady || carrierLeft <= 0 || carrierCd > 0);
+  }
+
+  updateBattleHud({ left, kills, fish, hp, maxHp, box, boxMax }) {
+    const t = $('bhTime'); const txt = fmtClock(left);
+    if (t.textContent !== txt) t.textContent = txt;
+    t.classList.toggle('urgent', left <= 10);
+    $('bhKills').textContent = `擊敗 ${kills}・🐟 ${fish}`;
+    this._bar('bhHp', Math.ceil(hp), maxHp, hp / maxHp < 0.3);
+    this._bar('bhBox', Math.ceil(box), boxMax, box / boxMax < 0.3);
   }
 
   setPrompt(text) {
