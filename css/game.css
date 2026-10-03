@@ -345,3 +345,50 @@ body.portrait .decor-bar { position: relative; left: auto; width: auto; bottom: 
 /* 面板開啟時，提示訊息移到畫面最上方，不蓋住面板內容 */
 body.modal-open #toast { top: calc(var(--safe-t) + 6px); left: 50%; z-index: 70; }
 body.modal-open .modal { padding-top: 56px; }
+
+/* ---------- Phase 10：ADMIN PANEL（工具介面：較密、可捲動） ---------- */
+.admin-screen { background: var(--wall); align-items: stretch; padding: 0; image-rendering: auto; }
+.admin { width: 100%; max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; height: 100%;
+  padding: max(10px, var(--safe-t)) 14px 10px; }
+.admin-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.admin-head h2 { margin: 0; font-size: 22px; letter-spacing: .08em; }
+.admin-head #adminBack { margin-left: auto; }
+.admin-tabs { flex-wrap: wrap; margin: 10px 0; }
+.admin-tabs .tab { flex: 1 1 auto; font-size: 14px; padding: 6px 10px; }
+.admin-body { flex: 1; overflow: auto; touch-action: pan-x pan-y; -webkit-user-select: text; user-select: text;
+  background: var(--paper); border: 3px solid var(--line); padding: 12px; }
+.admin-body h3, .admin-drawer h3 { margin: 16px 0 6px; font-size: 16px; }
+.admin-table-wrap { overflow-x: auto; touch-action: pan-x pan-y; }
+.admin-table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.admin-table th { text-align: left; background: var(--floor); border: 2px solid var(--line); padding: 6px 8px; white-space: nowrap; position: sticky; top: 0; }
+.admin-table td { border: 1px solid #D8B98A; padding: 5px 8px; vertical-align: top; }
+.admin-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.admin-table td.meta code { font-size: 12px; word-break: break-all; }
+.admin-table td.val input { width: 9em; padding: 4px 6px; font-size: 14px; }
+.admin-table input, .admin-table select { padding: 4px 6px; font-size: 14px; }
+.admin-table tr.clickable { cursor: pointer; }
+.admin-table tr.clickable:hover td { background: var(--wall); }
+.admin-tag { background: var(--pink); }
+.ev.ok { color: #3E8E5A; font-weight: 700; } .ev.bad { color: #B8432F; font-weight: 700; }
+.filters { align-items: flex-end; margin-bottom: 8px; }
+.filter { display: flex; flex-direction: column; font-size: 12px; margin: 0; }
+.filter input, .filter select { width: 13em; padding: 5px 8px; font-size: 14px; }
+.pager { justify-content: center; align-items: center; margin-top: 10px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.stat { border: 3px solid var(--line); background: var(--wall); padding: 12px; text-align: center; font-size: 14px; }
+.stat b { display: block; font-size: 30px; }
+.stat.warn-card { background: #FCE3DC; }
+.admin-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(640px, 100vw); z-index: 30; overflow: auto;
+  background: var(--paper); border-left: 4px solid var(--line); box-shadow: -6px 0 0 rgba(107, 62, 38, .25);
+  padding: max(12px, var(--safe-t)) 16px 24px; touch-action: pan-y; -webkit-user-select: text; user-select: text; }
+.kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px; }
+.kv div { border: 2px solid #D8B98A; padding: 4px 8px; display: flex; flex-direction: column; font-size: 13px; }
+.kv b { font-size: 15px; word-break: break-all; }
+.form { align-items: flex-end; }
+.form label { margin: 0; font-size: 12px; display: flex; flex-direction: column; }
+.form input, .form select { width: 8em; padding: 5px 6px; font-size: 14px; }
+.form input.reason { flex: 1 1 14em; width: auto; }
+.form label.check { flex-direction: row; align-items: center; gap: 4px; font-size: 13px; }
+.form label.check input { width: auto; }
+.adoption-card.ended { opacity: .7; }
+.admin-drawer textarea { width: 100%; font: inherit; border: 3px solid var(--line); padding: 6px; }
