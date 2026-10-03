@@ -267,3 +267,81 @@ body.portrait.in-arena #hud { flex-wrap: nowrap; align-items: stretch; }
 .bh-bars .bar { grid-template-columns: 3.4em 1fr 4.6em; }
 #bhBox .bar-track i { background: var(--wood); }
 .bar.low .bar-track i { background: var(--warn) !important; }
+
+/* ---------- Phase 9：家中操作、裝飾、商店、照護 ---------- */
+.home-actions {
+  position: fixed; z-index: 11; display: flex; flex-direction: column; gap: 8px;
+  right: calc(100vw - var(--canvas-left) - var(--canvas-w) + 10px); top: calc(var(--canvas-top) + var(--canvas-h) * 0.17);
+}
+.home-actions .btn { min-width: 5.5em; font-size: 15px; padding: 6px 10px; }
+.today-tasks { display: none; }
+body.portrait .home-actions {
+  position: relative; right: auto; top: auto; flex-direction: row; flex-wrap: wrap; padding: 10px 8px 0; gap: 8px;
+}
+body.portrait .home-actions .btn { flex: 1 1 20%; min-width: 0; }
+body.portrait .today-tasks {
+  display: block; flex: 1 1 100%; margin: 4px 0 0; background: var(--paper); border: 3px solid var(--line);
+  padding: 6px 10px; font-size: 14px; line-height: 1.7;
+}
+.today-tasks .ok { color: #3E8E5A; font-weight: 700; }
+
+.decor-bar {
+  position: fixed; z-index: 13; left: var(--canvas-left); width: var(--canvas-w);
+  bottom: max(8px, calc(100vh - var(--canvas-top) - var(--canvas-h) + 8px));
+  background: rgba(255, 248, 236, .96); border: 3px solid var(--line); box-shadow: 4px 4px 0 var(--wood); padding: 8px;
+}
+body.portrait .decor-bar { position: relative; left: auto; width: auto; bottom: auto; margin: 8px; }
+.decor-items { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; touch-action: pan-x; }
+.decor-item { flex: none; border: 3px solid var(--line); background: var(--wall); padding: 4px 8px; display: flex; align-items: center; gap: 6px; font-weight: 700; }
+.decor-item img, .icon { width: 36px; height: 36px; image-rendering: pixelated; flex: none; }
+.decor-item:disabled { opacity: .45; }
+.decor-tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.decor-tools #decorSave { margin-left: auto; }
+.decor-hint { margin: 6px 0 0; font-size: 13px; color: #7a5b45; }
+.theme-pick { display: inline-flex; gap: 4px; align-items: center; font-size: 13px; font-weight: 700; margin: 0 4px; }
+.theme-pick .btn.selected { background: var(--sky); }
+
+.card { border: 3px solid var(--line); background: var(--wall); padding: 10px 12px; margin: 10px 0; }
+.card h3 { margin: 0 0 4px; }
+.card.sick { background: #FCE3DC; }
+.care-head { font-weight: 900; font-size: 17px; margin: 0; }
+.choice img.icon { float: left; margin-right: 6px; width: 32px; height: 32px; }
+.choice.done { background: #E3F2D9; }
+.shop-tabs { flex-wrap: wrap; }
+.shop-tabs .tab { flex: 1 1 15%; padding: 6px 4px; font-size: 14px; }
+.wallet { font-weight: 900; margin: 0 0 8px; }
+.shop-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
+.shop-item { display: grid; grid-template-columns: 40px 1fr auto; gap: 10px; align-items: center; border: 3px solid var(--line); background: var(--wall); padding: 8px; }
+.shop-item p { margin: 2px 0 0; font-size: 13px; }
+.shop-item .buy { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.stepper { display: flex; align-items: center; gap: 4px; }
+.qty { min-width: 2em; text-align: center; font-weight: 900; }
+.price { font-weight: 900; }
+.brand { color: #7a5b45; }
+.bar.progress { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; margin: 6px 0; }
+.bar.progress .bar-track { height: 14px; }
+.bar.progress .bar-track i { background: var(--trust); }
+@media (max-width: 420px) { .shop-item { grid-template-columns: 36px 1fr; } .shop-item .buy { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: flex-end; } }
+
+/* 小遊戲 */
+.mini { position: relative; height: 240px; border: 3px solid var(--line); overflow: hidden; touch-action: none; margin: 8px 0; }
+.mini-status { font-weight: 700; margin: 4px 0; }
+.mini-litter { background: repeating-linear-gradient(45deg, #EADBB8 0 6px, #E2CFA4 6px 12px); }
+.clump { position: absolute; width: 44px; height: 34px; border: 3px solid var(--line); background: #8B5A2B; border-radius: 40% 50% 45% 40%; touch-action: none; }
+.mini-brush { background: #F6B0B0; display: flex; align-items: center; justify-content: center; }
+.mouth { background: #4A2A18; border: 3px solid var(--line); padding: 18px 14px; border-radius: 0 0 40px 40px; }
+.teeth { display: flex; gap: 6px; }
+.tooth { width: 34px; height: 44px; background: #E8DCA0; border: 3px solid var(--line); border-radius: 0 0 10px 10px; }
+.tooth.clean { background: #FFFFFF; box-shadow: inset 0 0 0 3px #CFEFFF; }
+.mini-wand { background: var(--wall); }
+.toy { position: absolute; width: 48px; height: 48px; border: 3px solid var(--line); background: var(--pink); border-radius: 50%; transition: left .25s steps(3), top .25s steps(3); touch-action: none; }
+.toy::after { content: ''; position: absolute; left: 50%; top: -30px; width: 4px; height: 30px; background: var(--wood); }
+.mini-nail { background: var(--wall); display: flex; align-items: center; justify-content: center; }
+.paw { display: flex; gap: 14px; background: var(--paper); border: 3px solid var(--line); padding: 30px 22px 22px; border-radius: 50% 50% 40% 40%; }
+.claw { width: 40px; height: 56px; border: 3px solid var(--line); background: #FCD3D3; border-radius: 50% 50% 40% 40%; position: relative; }
+.claw::before { content: ''; position: absolute; left: 12px; top: -18px; border: 8px solid transparent; border-bottom: 16px solid #FFF8EC; }
+.claw.cut::before { display: none; }
+
+/* 面板開啟時，提示訊息移到畫面最上方，不蓋住面板內容 */
+body.modal-open #toast { top: calc(var(--safe-t) + 6px); left: 50%; z-index: 70; }
+body.modal-open .modal { padding-top: 56px; }
