@@ -3,7 +3,28 @@
 像素貓咪養成、60 秒守護戰、流浪動物公益助養的 Web Game。
 前端：Vanilla JS + Canvas（GitHub Pages）。後端：Supabase（Auth + Postgres + RLS + RPC）。
 
-## 目前進度：Phase 8 完成（60 秒守護戰）
+## 目前進度：Phase 9 完成（道具、照護、房間佈置、助養）
+
+在房間右側（手機在畫面下方）有四個按鈕：
+
+| 按鈕 | 內容 | 後端 RPC |
+|---|---|---|
+| 照護 | 餵食、每日照護小遊戲（鏟貓砂、刷牙、逗貓棒、指甲）、休息、生病用藥 | `feed_pet`、`complete_care_task`、`rest_pet`、`use_medicine` |
+| 商店 | 食物、藥物、家具、裝飾、道具、背包 | `buy_item` |
+| 裝飾 | 拖曳擺放家具、翻轉、收回、地板與壁紙主題 | `save_room_layout` |
+| 助養 | 把魚乾投入助養任務（示範資料） | `get_charity_progress`、`donate_fish` |
+
+首頁也新增了「助養任務」按鈕。Phase 9 沒有修改 SQL。
+
+### Phase 9 檔案
+
+| 檔案 | 用途 |
+|---|---|
+| `js/ui/panels.js` | 照護、商店／背包、助養面板與 4 個照護小遊戲 |
+| `js/game/homeFurniture.js` | 家具素材、擺放資料、主題背景、裝飾模式 |
+| `js/game/furnitureArt.js` | 內建家具、地板／壁紙、商店圖示（依美術規格尺寸） |
+
+## Phase 8：60 秒守護戰
 
 從家裡的門出門 → 選戰場與技能 → 後端 `start_battle` 扣體力並產生出怪表 → 3 秒倒數 → 守護飼料箱 60 秒 → 後端 `end_battle` 驗證並發放魚乾。
 

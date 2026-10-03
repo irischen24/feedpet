@@ -40,6 +40,28 @@
   </div>
   <div id="prompt" class="hidden"></div>
 
+  <!-- 家中操作（照護 / 商店 / 裝飾 / 助養） -->
+  <div id="homeActions" class="home-actions hidden">
+    <button class="btn" data-act="care" id="btnCare">照護</button>
+    <button class="btn" data-act="shop">商店</button>
+    <button class="btn" data-act="decorate">裝飾</button>
+    <button class="btn" data-act="charity">助養</button>
+    <p id="todayTasks" class="today-tasks"></p>
+  </div>
+
+  <!-- 裝飾模式工具列 -->
+  <div id="decorBar" class="decor-bar hidden">
+    <div class="decor-items" id="decorItems"></div>
+    <div class="decor-tools">
+      <button class="btn small" id="decorFlip">翻轉</button>
+      <button class="btn small" id="decorRemove">收回</button>
+      <span id="decorThemes"></span>
+      <button class="btn small" id="decorCancel">取消</button>
+      <button class="btn small primary" id="decorSave">儲存</button>
+    </div>
+    <p class="decor-hint" id="decorHint">點家具選取後拖曳移動；點下方物品放進房間。</p>
+  </div>
+
   <!-- 手機 / 平板觸控 -->
   <div id="controls" class="hidden">
     <div id="joystick" aria-label="移動"><div class="knob"></div></div>
@@ -90,6 +112,7 @@
         <button id="btnStart" class="btn primary">開始照顧</button>
         <button id="btnHow" class="btn">玩法說明</button>
         <button id="btnRanking" class="btn">排行榜</button>
+        <button id="btnCharity" class="btn">助養任務</button>
         <button id="btnSettings" class="btn">設定</button>
         <button id="btnAdmin" class="btn admin hidden">管理後台</button>
       </div>
