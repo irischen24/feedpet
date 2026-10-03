@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src https://ybgyimttmsqzfttbgbpx.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="theme-color" content="#D9894A">
+<title>需你認養</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+<div id="app">
+  <!-- 遊戲畫布 -->
+  <div id="stage"><canvas id="game" aria-label="遊戲畫面"></canvas></div>
+
+  <!-- HUD：桌機覆蓋在畫布上方；手機直向時移到畫布下方 -->
+  <div id="hud" class="hidden">
+    <button id="hudCat" class="hud-cat" title="切換貓咪">
+      <img id="hudCatImg" alt="">
+      <span><strong id="hudCatName"></strong><small id="hudCatMeta"></small></span>
+    </button>
+    <div class="hud-bars">
+      <div class="bar" id="barStamina"><span class="bar-label">體力</span><span class="bar-track"><i></i></span><span class="bar-num"></span></div>
+      <div class="bar" id="barTrust"><span class="bar-label">信任</span><span class="bar-track"><i></i></span><span class="bar-num"></span></div>
+    </div>
+    <div class="hud-side">
+      <span class="fish" id="hudFish"></span>
+      <span class="timer" id="hudTimer"></span>
+    </div>
+    <button id="hudMenu" class="hud-menu" aria-label="暫停">❚❚</button>
+  </div>
+  <div id="prompt" class="hidden"></div>
+
+  <!-- 手機 / 平板觸控 -->
+  <div id="controls" class="hidden">
+    <div id="joystick" aria-label="移動"><div class="knob"></div></div>
+    <div class="action-buttons">
+      <button class="act" data-action="skill" id="btnSkill">技能</button>
+      <button class="act" data-action="interact" id="btnInteract">互動</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <section id="screen-loading" class="screen active">
+    <div class="loading-box">
+      <h1 class="title">需你認養</h1>
+      <p class="loading-text">LOADING...</p>
+      <p class="loading-bar" id="loadingBar">░░░░░░░░░░</p>
+      <p class="loading-pct" id="loadingPct">0%</p>
+    </div>
+  </section>
+
+  <!-- Login -->
+  <section id="screen-login" class="screen">
+    <div class="panel narrow">
+      <h1 class="title">需你認養</h1>
+      <div class="tabs" role="tablist">
+        <button role="tab" class="tab active" data-tab="login">登入</button>
+        <button role="tab" class="tab" data-tab="register">註冊</button>
+      </div>
+      <label for="loginUser">帳號</label>
+      <input id="loginUser" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20">
+      <label for="loginPass">密碼</label>
+      <input id="loginPass" type="password" autocomplete="current-password" maxlength="72">
+      <div id="registerOnly" class="hidden">
+        <label for="loginName">顯示名稱</label>
+        <input id="loginName" maxlength="20">
+        <p class="hint">帳號限 3–20 個小寫英文、數字或底線；密碼至少 8 碼。</p>
+      </div>
+      <p id="loginError" class="error" role="alert"></p>
+      <button id="btnAuth" class="btn primary wide">登入</button>
+    </div>
+  </section>
+
+  <!-- 首頁 -->
+  <section id="screen-menu" class="screen">
+    <div class="menu">
+      <h1 class="title big">需你認養</h1>
+      <div class="parade" id="parade"></div>
+      <div class="menu-buttons">
+        <button id="btnStart" class="btn primary">開始照顧</button>
+        <button id="btnHow" class="btn">玩法說明</button>
+        <button id="btnRanking" class="btn">排行榜</button>
+        <button id="btnSettings" class="btn">設定</button>
+        <button id="btnAdmin" class="btn admin hidden">管理後台</button>
+      </div>
+      <p class="player-line"><span id="menuPlayer"></span> <button id="btnLogout" class="link">登出</button></p>
+    </div>
+  </section>
+
+  <!-- 認養區 -->
+  <section id="screen-adopt" class="screen">
+    <div class="panel wide-panel">
+      <div class="panel-head">
+        <h2>認養區</h2>
+        <button class="btn small" id="btnAdoptBack">返回</button>
+      </div>
+      <p class="hint">每隻貓咪最多 100 位認養人。認養後 72 小時內要回來餵食，否則認養關係會結束。</p>
+      <ul id="adoptList" class="adopt-list"></ul>
+    </div>
+  </section>
+
+  <!-- 共用對話框 -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="panel modal-panel">
+      <div class="panel-head">
+        <h2 id="modalTitle"></h2>
+        <button class="btn small" id="modalClose">關閉</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 網路錯誤 -->
+  <div id="netError" class="modal hidden" role="alertdialog" aria-labelledby="netErrorText">
+    <div class="panel narrow center">
+      <p id="netErrorText">目前無法連接遊戲伺服器。<br>請確認網路連線後重試。</p>
+      <button id="btnRetry" class="btn primary">RETRY</button>
+    </div>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

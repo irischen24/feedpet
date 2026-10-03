@@ -3,7 +3,32 @@
 像素貓咪養成、60 秒守護戰、流浪動物公益助養的 Web Game。
 前端：Vanilla JS + Canvas（GitHub Pages）。後端：Supabase（Auth + Postgres + RLS + RPC）。
 
-## 目前進度：Phase 4–5 完成
+## 目前進度：Phase 7 完成
+
+開啟 `index.html` 就是遊戲本體：登入 → 首頁 → 認養區 → 我的房間 → 出門到戰場（練習模式）。
+網址加上 `?debug=1` 可在「設定」開啟除錯資訊（FPS、碰撞框、房間、座標、API 錯誤）。
+
+### Phase 6–7 檔案
+
+| 檔案 | 用途 |
+|---|---|
+| `index.html`、`css/game.css` | 遊戲外殼、像素風 UI、直向／橫向響應式排版 |
+| `js/main.js` | App 狀態機：LOADING → LOGIN → MENU → ADOPT / HOME ⇄ ARENA |
+| `js/engine/game.js` | requestAnimationFrame + 固定步長 Game Loop、DEBUG 覆蓋層 |
+| `js/engine/scaler.js` | 固定 1280×720 邏輯座標，畫布等比縮放 |
+| `js/engine/inputManager.js` | 鍵盤、虛擬搖桿、觸控按鈕、點地板移動（Pointer Events） |
+| `js/engine/collision.js` | 可行走多邊形 + 矩形碰撞，分軸解算 |
+| `js/engine/assetManager.js` | 圖片載入與進度 |
+| `js/engine/audioManager.js` | 合成音效 Placeholder、音樂／音效開關 |
+| `js/game/room.js`、`roomScene.js` | Room 定義（碰撞、門、出生點、怪物出生點）與場景 |
+| `js/game/player.js` | 貓咪角色：移動、方向、Idle／Walk 動畫、對話泡泡 |
+| `js/game/roomArt.js` | 延伸場景與物件（後院、倉庫、門、飼料箱、木箱） |
+| `js/game/dataStore.js` | 伺服器狀態快取、提醒文字 |
+| `js/ui/uiManager.js` | 畫面、HUD、對話框、Toast、網路錯誤 RETRY |
+| `assets/sprites/*.png` | 由原圖降採樣的原生像素 sprite（約 44×48） |
+| `assets/rooms/room_home.png` | 房間原圖重新對齊為 427×240（×3 繪製） |
+
+## Phase 4–5
 
 | 檔案 | 用途 |
 |---|---|
