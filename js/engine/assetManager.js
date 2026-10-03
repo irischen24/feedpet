@@ -27,6 +27,18 @@ export class AssetManager {
     })));
   }
 
+  // 可選素材：載入失敗（檔案不存在）就略過，回傳實際找到的 key
+  async loadOptional(manifest, onProgress = () => {}) {
+    const entries = Object.entries(manifest);
+    const found = [];
+    let done = 0;
+    await Promise.all(entries.map(([key, url]) => this._loadImage(url)
+      .then((img) => { this.images.set(key, img); found.push(key); })
+      .catch(() => {})
+      .finally(() => { done += 1; onProgress(done, entries.length); })));
+    return found;
+  }
+
   _loadImage(url) {
     return new Promise((resolve, reject) => {
       const img = new Image();

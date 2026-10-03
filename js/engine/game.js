@@ -20,7 +20,8 @@ export class Game {
     this._fps = 60; this._fpsAcc = 0; this._fpsFrames = 0;
     this._frame = this._frame.bind(this);
     this.debugInfo = () => ({});
-    this.onFrame = null;            // 每幀呼叫（HUD 倒數等 UI 更新）
+    this.onFrame = null;
+    this.timeScale = 1;             // 只供測試（?debug=1）使用            // 每幀呼叫（HUD 倒數等 UI 更新）
     document.addEventListener('visibilitychange', () => { this._last = performance.now(); });
   }
 
@@ -49,7 +50,7 @@ export class Game {
     if (this.scene) {
       if (this.input.consume('pause') && this.scene.onPause) this.scene.onPause();
       if (!this.paused) {
-        this._acc += dt;
+        this._acc += dt * this.timeScale;
         while (this._acc >= STEP) { this.scene.update(STEP); this._acc -= STEP; }
       }
       this.render();
