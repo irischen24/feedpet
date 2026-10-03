@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://ybgyimttmsqzfttbgbpx.supabase.co; base-uri 'none'; form-action 'none'">
+<title>需你認養｜Phase 5 後端驗證台</title>
+<style>
+  :root {
+    --wall: #FBE6B6; --floor: #F0B46A; --wood: #D9894A; --line: #6B3E26;
+    --sky: #8DCFFF; --ink: #3B2A20; --ok: #3E8E5A; --bad: #B8432F; --paper: #FFF8EC;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; color: var(--ink); background: var(--wall);
+    font: 15px/1.6 "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  }
+  header {
+    background: var(--floor); border-bottom: 4px solid var(--line);
+    padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline;
+  }
+  header h1 { margin: 0; font-size: 22px; letter-spacing: .04em; }
+  header p { margin: 0; font-size: 13px; }
+  #banner { display: none; background: var(--bad); color: #fff; padding: 10px 20px; gap: 12px; align-items: center; }
+  #banner.show { display: flex; }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 16px; max-width: 1280px; margin: 0 auto; }
+  @media (max-width: 820px) { main { grid-template-columns: 1fr; } }
+  section {
+    background: var(--paper); border: 3px solid var(--line); padding: 14px 16px;
+    box-shadow: 4px 4px 0 var(--wood);
+  }
+  section h2 { margin: 0 0 10px; font-size: 16px; }
+  label { display: block; font-size: 13px; margin: 6px 0 2px; }
+  input, select {
+    width: 100%; padding: 8px; border: 2px solid var(--line); background: #fff; font: inherit; color: var(--ink);
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  button {
+    font: inherit; padding: 7px 12px; border: 2px solid var(--line); background: var(--floor);
+    color: var(--ink); cursor: pointer; box-shadow: 2px 2px 0 var(--line);
+  }
+  button:active { transform: translate(2px, 2px); box-shadow: none; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; }
+  button.secondary { background: var(--paper); }
+  #out {
+    grid-column: 1 / -1; background: #2b211b; color: #f7e9cf; border-color: var(--line);
+    font: 12.5px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; word-break: break-all;
+    max-height: 420px; overflow: auto; margin: 0;
+  }
+  .pass { color: #9be0a8; } .fail { color: #ffb4a3; }
+  .hidden { display: none; }
+  #who { font-weight: 700; }
+  .list { margin: 8px 0 0; padding: 0; list-style: none; }
+  .list li { border-top: 1px dashed var(--wood); padding: 6px 0; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>需你認養｜後端驗證台</h1>
+  <p>Phase 5：Auth、RLS、Logging 的實機驗證工具，不是遊戲畫面。</p>
+</header>
+<div id="banner" role="alert">
+  <span>目前無法連接遊戲伺服器。請確認網路連線後重試。</span>
+  <button id="retry" class="secondary">RETRY</button>
+</div>
+
+<main>
+  <section id="authBox">
+    <h2>登入或註冊</h2>
+    <label for="u">帳號（3–20 個小寫英文、數字、底線）</label>
+    <input id="u" autocomplete="username" maxlength="20">
+    <label for="p">密碼（至少 8 碼）</label>
+    <input id="p" type="password" autocomplete="current-password">
+    <label for="d">顯示名稱（註冊時使用）</label>
+    <input id="d" maxlength="20">
+    <div class="row">
+      <button id="btnLogin">登入</button>
+      <button id="btnRegister" class="secondary">註冊</button>
+    </div>
+  </section>
+
+  <section id="playerBox" class="hidden">
+    <h2>玩家：<span id="who"></span></h2>
+    <div class="row">
+      <button id="btnState">重新載入狀態</button>
+      <button id="btnAnimals">認養區</button>
+      <button id="btnBuy">買 1 份基本乾糧</button>
+      <button id="btnFeed">餵第一隻</button>
+      <button id="btnBrush">幫第一隻刷牙</button>
+    </div>
+    <div class="row">
+      <button id="btnStart">開始戰鬥</button>
+      <button id="btnEnd">回報戰鬥結果</button>
+      <button id="btnRank">排行榜</button>
+      <button id="btnLog">送出測試日誌</button>
+    </div>
+    <div class="row">
+      <button id="btnSecurity" class="secondary">執行安全測試</button>
+      <button id="btnLogout" class="secondary">登出</button>
+    </div>
+    <ul id="animalList" class="list"></ul>
+  </section>
+
+  <section id="adminBox" class="hidden">
+    <h2>管理員</h2>
+    <div class="row">
+      <button id="btnPlayers">玩家列表</button>
+      <button id="btnLoginLogs">登入日誌</button>
+      <button id="btnAudit">Admin Audit</button>
+    </div>
+    <label for="gUser">玩家 ID（從玩家列表複製）</label>
+    <input id="gUser">
+    <label for="gFish">魚乾數量</label>
+    <input id="gFish" type="number" value="50">
+    <label for="gReason">原因</label>
+    <input id="gReason" value="測試獎勵" maxlength="200">
+    <div class="row"><button id="btnGrant">發放魚乾</button></div>
+  </section>
+
+  <pre id="out" aria-live="polite"></pre>
+</main>
+
+<script type="module" src="./phase5-test.js"></script>
+</body>
+</html>
