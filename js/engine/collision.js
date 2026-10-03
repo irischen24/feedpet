@@ -37,6 +37,12 @@ export class CollisionManager {
   // entity 需提供 x, y 與 feetBoxAt(x, y)
   move(entity, dx, dy) {
     let hitX = false, hitY = false;
+    // 目前已經卡在障礙物裡（例如家具剛好擺在貓身上）：只檢查地板範圍，讓角色可以走出來
+    if (!this.boxIsFree(entity.feetBoxAt(entity.x, entity.y))) {
+      const inside = (b) => [[b.x, b.y], [b.x + b.w, b.y + b.h], [b.x, b.y + b.h], [b.x + b.w, b.y]].every(([x, y]) => pointInPolygon(x, y, this.walkable));
+      if (inside(entity.feetBoxAt(entity.x + dx, entity.y + dy))) { entity.x += dx; entity.y += dy; }
+      return { hitX: false, hitY: false };
+    }
     if (dx) {
       if (this.boxIsFree(entity.feetBoxAt(entity.x + dx, entity.y))) entity.x += dx; else hitX = true;
     }
