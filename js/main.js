@@ -19,6 +19,7 @@ import { buildMonsterSheets } from './game/monsterArt.js';
 import { BattleScene } from './game/battleScene.js';
 import { furnitureManifest, buildFurnitureAssets, composeHomeBg, furnitureProps, DecorateController, FURNITURE_CODES, DECOR_CODES, iconUrl } from './game/homeFurniture.js';
 import { Panels } from './ui/panels.js';
+import { AdminManager } from './admin/adminManager.js';
 import { ROOM_DEFS } from './game/room.js';
 import { RoomScene } from './game/roomScene.js';
 import { DataStore } from './game/dataStore.js';
@@ -46,6 +47,7 @@ class App {
     this.scene = null;
     this.catalogLoaded = false;
     this.panels = new Panels(this);
+    this.admin = new AdminManager(this);
     this.modalKind = null;
     this._refreshAcc = 0;
     this._hudAcc = 0;
@@ -641,9 +643,9 @@ class App {
     $('decorRemove').addEventListener('click', () => this.scene?.decor?.remove());
     $('decorCancel').addEventListener('click', () => this.endDecorate());
     $('decorSave').addEventListener('click', () => this.saveDecorate());
-    $('btnAdmin').addEventListener('click', () => this.openModal('管理後台', [
-      el('p', { text: '管理後台將在 Phase 10 完成。目前可以用 tools/phase5-test.html 的管理員功能。' }),
-    ]));
+    $('btnAdmin').addEventListener('click', () => { this._stopScene(); this.state = 'ADMIN'; this.admin.open(); });
+    $('adminBack').addEventListener('click', () => this.enterMenu().catch((e) => this.fail(e, () => this.enterMenu())));
+    $('adminDrawerClose').addEventListener('click', () => this.admin.closeDrawer());
     $('btnLogout').addEventListener('click', async () => {
       await this.logs.flush();
       await auth.logout();
