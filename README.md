@@ -3,7 +3,37 @@
 像素貓咪養成、60 秒守護戰、流浪動物公益助養的 Web Game。
 前端：Vanilla JS + Canvas（GitHub Pages）。後端：Supabase（Auth + Postgres + RLS + RPC）。
 
-## 目前進度：Phase 7 完成
+## 目前進度：Phase 8 完成（60 秒守護戰）
+
+從家裡的門出門 → 選戰場與技能 → 後端 `start_battle` 扣體力並產生出怪表 → 3 秒倒數 → 守護飼料箱 60 秒 → 後端 `end_battle` 驗證並發放魚乾。
+
+### Phase 8 檔案
+
+| 檔案 | 用途 |
+|---|---|
+| `js/game/battleScene.js` | 戰鬥流程、自動攻擊、技能、外出籠、戰鬥 HUD |
+| `js/game/monster.js` | 怪物 AI（灰塵怪巡邏追擊、飢餓怪衝飼料箱、搗蛋怪之字形） |
+| `js/game/monsterArt.js` | 內建怪物 Sprite Sheet（依美術規格的格子尺寸） |
+| `js/engine/sprites.js` | Sprite Sheet 規格、繪製、動畫播放器 |
+
+### 自行上傳美術
+
+依《美術素材規格》把 PNG 放到 `assets/` 對應路徑即可，遊戲會優先使用；檔案不存在時用內建版本。
+尺寸不符規格的圖會被略過，並在瀏覽器 Console（`?debug=1` 時也會跳提示）列出原因。
+
+### 戰鬥平衡參數（前端，可直接調整）
+
+| 參數 | 位置 | 目前值 |
+|---|---|---|
+| 自動攻擊間隔 | `battleScene.js` `AUTO_PERIOD` | 0.75 秒 |
+| 一次揮爪最多命中 | `battleScene.js` `CLEAVE` | 3 隻 |
+| 受傷後無敵時間 | `battleScene.js` `IFRAMES` | 0.8 秒 |
+| 自動攻擊範圍 | `battleScene.js` `AUTO_RANGE` | 115 px |
+| 飢餓怪啃飼料箱間隔 | `monster.js` `TUNING.boxCooldown` | 2.0 秒 |
+
+怪物 HP／攻擊／速度在 Supabase `monsters` 表；飼料箱生命、每局秒數、外出籠在 `game_config` 表。
+
+## Phase 7
 
 開啟 `index.html` 就是遊戲本體：登入 → 首頁 → 認養區 → 我的房間 → 出門到戰場（練習模式）。
 網址加上 `?debug=1` 可在「設定」開啟除錯資訊（FPS、碰撞框、房間、座標、API 錯誤）。
