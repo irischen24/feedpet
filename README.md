@@ -3,7 +3,15 @@
 像素貓咪養成、60 秒守護戰、流浪動物公益助養的 Web Game。
 前端：Vanilla JS + Canvas（GitHub Pages）。後端：Supabase（Auth + Postgres + RLS + RPC）。
 
-## 目前進度：Phase 10 完成（ADMIN PANEL）
+## 目前進度：Phase 12 完成（全部完成）
+
+- **Phase 11 響應式**：9 種尺寸 × 11 個畫面自動檢查，修正後 0 個問題；戰鬥中直橫切換正常。
+- **Phase 12 整合測試**：在 PostgreSQL + PostgREST 上以實際 schema 與 RLS 測試 41 項，全部通過。
+- 詳細結果見 [`TEST_REPORT.md`](TEST_REPORT.md)；測試腳本在 [`tests/`](tests/README.md)。
+
+> 本次修正了 `start_battle` 的並發處理，**請在 Supabase SQL Editor 重新執行一次 `supabase/supabase_schema.sql`**（可重複執行，不影響現有資料）。
+
+## Phase 10：ADMIN PANEL
 
 管理員登入後，首頁會出現「管理後台」。按鈕只是介面；真正的權限由後端 `is_admin()` 與 RLS 判斷，
 一般玩家就算從瀏覽器直接呼叫管理功能也會被拒絕（已用實際 PostgreSQL + PostgREST 測試）。
