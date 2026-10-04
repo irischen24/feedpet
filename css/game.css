@@ -392,3 +392,38 @@ body.modal-open .modal { padding-top: 56px; }
 .form label.check input { width: auto; }
 .adoption-card.ended { opacity: .7; }
 .admin-drawer textarea { width: 100%; font: inherit; border: 3px solid var(--line); padding: 6px; }
+
+/* ---------- Phase 11：響應式修正 ---------- */
+/* 按鈕文字不換行（避免「購買」被擠成兩行） */
+.btn, .tab, .act { white-space: nowrap; }
+/* 觸控裝置：分頁與小按鈕至少 44px 高 */
+body.touch .tab { min-height: 44px; }
+body.touch .btn.small { min-height: 40px; }
+/* 畫面內容比螢幕高時可以捲動（手機橫向的首頁、認養區） */
+.screen { overflow-y: auto; touch-action: pan-y; }
+.screen.active { align-items: safe center; }
+/* 矮螢幕（手機橫向）：首頁改成精簡排版 */
+@media (max-height: 500px) {
+  .title.big { font-size: 40px; margin-bottom: 4px; }
+  .parade { margin-bottom: 10px; }
+  .parade img { height: 64px; }
+  .menu-buttons { grid-template-columns: repeat(3, minmax(120px, 1fr)); width: min(620px, 100%); gap: 10px; }
+  .menu-buttons .primary { font-size: 18px; min-height: 48px; }
+  .menu-buttons .btn { min-height: 44px; padding: 6px 10px; }
+  .player-line { margin-top: 10px; padding: 4px 12px; }
+  .panel.narrow .title { font-size: 30px; margin-bottom: 6px; }
+}
+/* 平板直向（iPad）：HUD、家中按鈕、控制鈕放大 */
+@media (min-width: 600px) {
+  body.portrait #hud { font-size: clamp(15px, 2.3vw, 20px); padding: 12px; gap: 12px; }
+  body.portrait .home-actions .btn { font-size: 18px; min-height: 52px; }
+  body.portrait .today-tasks { font-size: 17px; }
+  body.portrait .bh-time b { font-size: 40px; }
+  body.portrait .battle-hud { font-size: 18px; }
+}
+/* 小螢幕商店：購買區獨立一行、按鈕緊湊 */
+@media (max-width: 420px) {
+  .shop-item .buy .btn.primary { padding: 4px 14px; }
+  .shop-tabs .tab { flex: 1 1 30%; }
+}
+@media (max-width: 380px) { body.portrait .home-actions .btn { font-size: 14px; padding: 6px 4px; } }
